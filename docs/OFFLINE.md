@@ -14,11 +14,15 @@ project must build with no downloads at all, and with git and GitHub traffic kep
 | MobileNetV2 ImageNet weights, no top | `~/.keras/models/mobilenet_v2_weights_tf_dim_ordering_tf_kernels_1.0_224_no_top.h5` | Phase 11 stretch |
 | GitHub issues #1 to #11 | github.com/kanadb004/personalized-gesture-vocab-builder/issues | One per phase, issue number = phase number + 1 |
 | `phase` label | GitHub | Used by the issue workflow |
+| Kaggle ASL Alphabet (1.2 GB, 87,000 images, 29 classes, 200x200) | `data/raw/asl_alphabet/asl_alphabet_train/asl_alphabet_train/<class>/` (gitignored) | Phase 2, bulk of the backbone training data |
+| Kaggle ASL Alphabet Test (27 MB, 1,740 images, different signer) | `data/raw/asl_alphabet_test/<class>/` (gitignored) | Phase 2, cross-signer split |
+| Kaggle CLI 2.2.4 | `uv tool install kaggle`, token in `~/.kaggle/access_token` | Only needed if more datasets are wanted while online |
 
-Not fetched: the optional Kaggle ASL Alphabet image dataset (Phase 2 supplement). It needs a
-Kaggle login and is about 1 GB. The plan's default is self-recorded landmark data, which
-needs no download. If the dataset is wanted later, download it manually into
-`data/raw/asl_alphabet/` (gitignored) and run `scripts/extract_landmarks.py`.
+The raw image folders are large and gitignored. If they are ever lost they can be re-fetched
+only while online: `kaggle datasets download grassknoted/asl-alphabet -p data/raw/asl_alphabet --unzip`
+and `kaggle datasets download danrasband/asl-alphabet-test -p data/raw/asl_alphabet_test --unzip`.
+The extracted landmark files that Phase 2 produces from them are small and committed, so the
+raw images are not needed after Phase 2.
 
 ## Installing with no network
 

@@ -50,7 +50,7 @@ phase notes and change this section in the same PR.
 | GUI | Tkinter (ships with the env), camera frame drawn into a Label via Pillow `ImageTk`. Enrollment wizard is a Toplevel. |
 | Config | `configs/default.yaml` loaded by `pgvb.config.load()`. Every tunable lives there. |
 | Testing | pytest, no hardware in unit tests. Recorded landmark streams (`data/sessions/*.npz`) make every stage after MediaPipe testable offline. |
-| Datasets | Self-recorded landmark dataset via `scripts/collect_poses.py` (30 catalogued poses, 2 or more recorders). Optional supplement: Kaggle ASL Alphabet images run through `scripts/extract_landmarks.py`. Raw images and video are never committed. |
+| Datasets | Two sources. (a) Kaggle ASL Alphabet, already on disk in `data/raw/asl_alphabet/` (87k images, 29 classes, one signer) and `data/raw/asl_alphabet_test/` (1,740 images, a different signer), run through `scripts/extract_landmarks.py`; this is the bulk of the train split. (b) Self-recorded poses via `scripts/collect_poses.py` (the catalogue, 2 or more recorders); this supplies the held-out poses and cross-person training data. Raw images and video are never committed. |
 
 ## 3. Target repository layout
 
@@ -212,20 +212,37 @@ some poses are never seen in training and can measure few-shot generalization.
 
 Depends on: Phase 1.
 
+Data already on disk (see `docs/OFFLINE.md`): `data/raw/asl_alphabet/asl_alphabet_train/asl_alphabet_train/<class>/*.jpg`
+with 29 classes (A to Z, del, nothing, space), 3000 images each, 200x200 pixels, one signer;
+`data/raw/asl_alphabet/asl_alphabet_test/` (one image per class) and
+`data/raw/asl_alphabet_test/<class>/*.jpg` (1,740 images, 60 per class, a different signer).
+Measured on 2026-09-13 with `HandLandmarker` at `min_hand_detection_confidence=0.3`: 75
+percent of train images and 94 percent of test images yield a hand at native size; upscaling
+does not help. `nothing` has no hand (drop it), and `N`, `X`, `del` detect under 60 percent
+(keep whatever detects, report the rate).
+
 Deliverables:
-- `data/pose_catalogue.yaml`: 30 static poses with id, name, short description, and split
-  (`train` for 22, `heldout` for 8). Suggested set: ASL letters A, B, C, D, F, I, L, O, U, V,
-  W, Y; numbers 1 to 5; thumbs up, thumbs down, fist, open palm, OK sign, pinch, pointing,
-  call me, rock, horns, gun, claw, flat hand sideways. Held-out poses must be visually
-  distinct from each other.
+- `data/pose_catalogue.yaml`: every pose with id, name, short description, source
+  (`asl_alphabet`, `recorded`, or both), and split (`train` or `heldout`). Train: the ASL
+  letters and `space` from the Kaggle data, plus recorded versions of at least 12 of them
+  (A, B, C, D, F, I, L, O, U, V, W, Y) so the train split has two or more people. Held-out
+  (recorded only, never in Kaggle): 8 poses chosen to be visually distinct from each other
+  and from any ASL letter, for example thumbs up, thumbs down, OK sign, pinch, call me, horns,
+  claw, flat hand sideways. Pointing and fist are excluded from held-out because they
+  resemble D and A or S. Extend the recorded set with numbers 1 to 5 and rock if time allows.
 - `scripts/collect_poses.py --recorder <name> --poses all|<ids>`: guided webcam session; for
   each pose shows the name and description, 3 second countdown, records `frames_per_pose`
   (default 150) tracked frames while prompting the recorder to slowly vary angle and
   distance; skips frames with no hand; writes `data/raw/<recorder>/<pose>.npz`.
-- `scripts/extract_landmarks.py --images <dir> --out <file>`: optional path for image folders
-  (class per subfolder) through `HandLandmarker` IMAGE mode; reports detection rate per class.
+- `scripts/extract_landmarks.py --images <dir> --out <file> [--limit-per-class N]`: runs an
+  image folder (class per subfolder) through `HandLandmarker` IMAGE mode, writes raw landmark
+  arrays plus handedness per image to `data/raw/landmarks_<name>.npz`, skips undetected images,
+  reports the detection rate per class, and marks the source name. Runs on both Kaggle folders;
+  processing 87k images takes a while (about 30 ms per image), so support `--limit-per-class`
+  (default 1000) and resume from a partial output.
 - `pgvb/train/dataset.py`: `build_dataset(raw_dir) -> data/landmarks/poses_v1.npz` with arrays
-  `x` (N, 63), `y` (N,), `recorder` (N,), `pose_id` list, `split` per pose. Also
+  `x` (N, 63), `y` (N,), `recorder` (N,) (the Kaggle signers count as recorders `asl_train`
+  and `asl_test`), `pose_id` list, `split` per pose. Also
   `augment(x, rng)`: small rotation about the wrist (plus or minus 15 degrees), scale jitter
   (0.9 to 1.1), Gaussian jitter (sigma 0.01), applied on the fly in training only.
 - `scripts/dataset_report.py`: prints samples per pose per recorder, and a 2-D PCA scatter of
@@ -239,10 +256,14 @@ Definition of Done (code):
 - [ ] `build_dataset` refuses to put a held-out pose into the train split (tested).
 - [ ] `dataset_report.py` runs on whatever raw data exists.
 
-Definition of Done (data, HUMAN):
-- [ ] At least 2 recorders, all 30 poses, at least 100 tracked frames per pose per recorder.
-- [ ] `data/landmarks/poses_v1.npz` committed (under 20 MB) with `reports/dataset_pca.png`.
-- [ ] `docs/phases/phase-2.md` lists recorders, counts, and any poses that tracked poorly.
+Definition of Done (data):
+- [ ] `extract_landmarks.py` run on both Kaggle folders; detection rate per class in
+      `reports/asl_detection_rates.md`; at least 20 classes with 500 or more detected samples.
+- [ ] HUMAN: at least 2 recorders, all catalogue poses marked `recorded`, at least 100 tracked
+      frames per pose per recorder.
+- [ ] `data/landmarks/poses_v1.npz` committed (under 20 MB; subsample the Kaggle classes to
+      at most 800 per class if needed) with `reports/dataset_pca.png`.
+- [ ] `docs/phases/phase-2.md` lists sources, recorders, counts, and poses that tracked poorly.
 
 Verification: `pytest -q`; `python scripts/dataset_report.py`.
 
