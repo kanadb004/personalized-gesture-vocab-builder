@@ -13,9 +13,10 @@ start of every session. The original project document is `docs/DA-1.pdf`.
 1. `git checkout main && git pull --ff-only origin main` and confirm `git status` is clean.
 2. Open `docs/PLAN.md`, find the first phase whose status is not `Done`. That is the phase for
    this session. Do not skip ahead and do not start a second phase in the same session.
-3. Create the GitHub issue for the phase (skip if it already exists, check with `gh issue list`):
-   `gh issue create --title "Phase N: <title>" --label phase --body-file <tmpfile>`
-   The body is the phase's Goal plus its Definition of Done checklist copied from the plan.
+3. Find the phase's issue. Issues #1 to #11 already exist for Phases 0 to 10 (issue number =
+   phase number + 1); confirm with `gh issue list --label phase`. Only create one if it is
+   missing: `gh issue create --title "Phase N: <title>" --label phase --body-file <tmpfile>`
+   with the Goal plus the Definition of Done checklist copied from the plan.
 4. Branch: `git checkout -b phase-N-<slug>` (example: `phase-1-landmark-pipeline`).
 5. Build the phase. Commit in small, logical steps (see commit rules below).
 6. Before opening the PR, every DoD box must be verifiably true. Run the verification commands
@@ -30,6 +31,10 @@ start of every session. The original project document is `docs/DA-1.pdf`.
    `git checkout main && git pull --ff-only origin main && git branch -D phase-N-<slug>` (if left)
 9. Verify nothing attributes Claude: `git log -3 --format='%an <%ae>%n%B'` must show only the
    team author and no trailers.
+
+If GitHub is unreachable or the connection is very slow, follow `docs/OFFLINE.md` instead of
+steps 7 and 8 (stacked branches, sync later). No step in any phase may download anything;
+everything needed is already on this machine, see `docs/OFFLINE.md` for the inventory.
 
 If a phase cannot be completed in one session, push the branch, leave the PR open as a draft
 (`gh pr create --draft`), and record what remains in `docs/phases/phase-N.md`. The next session
@@ -75,8 +80,12 @@ resumes on that branch.
   CPU delegates. 0.10.14 was verified end to end (2 hands detected on a real photo).
 - `pip check` prints one cosmetic line, `mediapipe 0.10.14 is not supported on this platform`;
   ignore it. Any other `pip check` output is a real problem.
-- New dependency: `pip install` it in `pgvb`, then add the exact pinned version to
-  `requirements.txt` in the same commit, then run `pip check`.
+- `requirements.txt` holds the exact pins and a full wheelhouse of them is at
+  `~/Work/pgvb-wheelhouse/` (offline repair: `docs/OFFLINE.md`). Install the package with
+  `pip install --no-build-isolation -e .`, never without the flag.
+- New dependency: only if it is already installed or in the wheelhouse. Then pin it in
+  `requirements.txt` in the same commit and run `pip check`. Nothing is downloaded after
+  2026-09-13.
 - Hand tracking: use the MediaPipe Tasks API only:
   `from mediapipe.tasks.python import vision; vision.HandLandmarker` with the model file
   `models/hand_landmarker.task` (7.8 MB, downloaded by `scripts/download_models.py` from

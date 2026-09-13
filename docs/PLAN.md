@@ -135,24 +135,27 @@ Depends on: nothing.
 
 Deliverables:
 - `pyproject.toml` (package `pgvb`, `src` layout, console script `pgvb = pgvb.__main__:main`,
-  pytest config), `requirements.txt` with exact pins from CLAUDE.md, `.gitignore`, `LICENSE`
-  (MIT), `README.md` with setup and quick start.
+  pytest config), `LICENSE` (MIT), `README.md` with setup and quick start. `requirements.txt`
+  and `.gitignore` already exist; verify them against CLAUDE.md rather than rewriting.
 - `src/pgvb/__init__.py` (version), `__main__.py` (argparse with subcommands `app`, `demo`,
   `version`; only `version` works in this phase), `config.py` (load YAML into a dataclass
   tree, `load(path=None)` defaults to `configs/default.yaml`).
 - `configs/default.yaml` with every tunable named in Section 2, commented.
 - `scripts/download_models.py`: downloads `hand_landmarker.task` to `models/`, verifies size,
-  idempotent.
+  idempotent. The file is already present on this machine (see `docs/OFFLINE.md`), so the
+  script must detect it and exit 0 without any network access.
 - `scripts/check_env.py`: imports numpy, cv2, mediapipe, pyttsx3, tkinter, yaml, prints
   versions, exits non-zero on any failure or on a numpy 2 install.
 - `tests/test_config.py`, `tests/test_smoke.py`.
 - `docs/phases/phase-0.md`, `docs/DA-1.pdf` copied into the repo.
 
 Definition of Done:
-- [ ] `pip install -e .` in `pgvb` succeeds and `pgvb version` prints the version.
+- [ ] `pip install --no-build-isolation -e .` in `pgvb` succeeds offline and `pgvb version`
+      prints the version.
 - [ ] `python scripts/check_env.py` exits 0 and prints the pinned versions.
-- [ ] `python scripts/download_models.py` creates `models/hand_landmarker.task` (7,819,105 bytes)
-      and a second run says it is already present.
+- [ ] `python scripts/download_models.py` finds the existing `models/hand_landmarker.task`
+      (7,819,105 bytes) and reports it present without downloading; with the file renamed
+      away and the network unplugged it fails with a clear message naming the URL.
 - [ ] `pytest -q` passes (config loads, every key in Section 2 present with the default value).
 - [ ] `pip check` prints nothing except the known mediapipe platform line.
 - [ ] `.gitignore` covers `data/raw/`, `profiles/*.json` (except example), `models/*.task`,

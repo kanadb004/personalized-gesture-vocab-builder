@@ -1,0 +1,21 @@
+# Exact pins verified in the pgvb conda env (see CLAUDE.md). Do not loosen.
+numpy==1.26.4
+tensorflow==2.16.2
+tensorflow-macos==2.16.2
+tensorflow-metal==1.2.0
+keras==3.10.0
+ml-dtypes==0.3.2
+mediapipe==0.10.14
+jax==0.4.25
+jaxlib==0.4.25
+opencv-python==4.11.0.86
+opencv-contrib-python==4.11.0.86
+protobuf==4.25.8
+pillow==11.2.1
+pyttsx3==2.99
+PyYAML==6.0.3
+scikit-learn==1.7.0
+matplotlib==3.10.3
+pandas==2.2.3
+tqdm==4.67.1
+pytest==9.1.1
