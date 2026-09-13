@@ -1,0 +1,24 @@
+#!/bin/bash
+# Enforces the commit message rules in CLAUDE.md.
+# Enable once per clone: git config core.hooksPath .githooks
+msg_file="$1"
+fail() { echo "commit-msg: $1" >&2; exit 1; }
+
+# Strip comment lines before checking.
+body=$(grep -v '^#' "$msg_file")
+
+if LC_ALL=C grep -q -i -E 'co-authored-by|claude-session|generated with|claude\.ai|anthropic' <<< "$body"; then
+  fail "attribution trailers or Claude references are not allowed"
+fi
+
+# U+2014 em dash (e2 80 94) and U+2013 en dash (e2 80 93).
+if LC_ALL=C grep -q -e $'\xe2\x80\x94' -e $'\xe2\x80\x93' <<< "$body"; then
+  fail "em dash or en dash found, use a comma, colon, or hyphen"
+fi
+
+subject=$(printf '%s\n' "$body" | sed -n '1p')
+[ -z "$subject" ] && fail "empty subject line"
+[ ${#subject} -gt 60 ] && fail "subject is ${#subject} characters, max is 60"
+case "$subject" in *.) fail "subject must not end with a period" ;; esac
+
+exit 0

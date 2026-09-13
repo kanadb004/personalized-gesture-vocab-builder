@@ -1,0 +1,30 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.eggs/
+build/
+dist/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.venv/
+.env
+
+# Editors and OS
+.vscode/
+.idea/
+.DS_Store
+
+# Downloaded models (see scripts/download_models.py)
+models/*.task
+
+# Data that is never committed
+data/raw/
+
+# User profiles, except the example
+profiles/*.json
+!profiles/example.json
+
+# Claude Code local overrides
+.claude/settings.local.json
