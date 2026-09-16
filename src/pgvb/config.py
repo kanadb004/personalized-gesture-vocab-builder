@@ -67,6 +67,7 @@ class SmoothingConfig:
 
 @dataclass
 class OutputConfig:
+    tts_backend: str = "pyttsx3"
     tts_rate: int = 175
     tts_voice: str = "default"
     board_size: int = 5

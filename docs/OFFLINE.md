@@ -10,12 +10,12 @@ project must build with no downloads at all, and with git and GitHub traffic kep
 | Conda env `pgvb` | `/opt/anaconda3/envs/pgvb` | Complete runtime and training env, see CLAUDE.md pins |
 | Wheelhouse (231 wheels, 545 MB) | `~/Work/pgvb-wheelhouse/` | Every package in `requirements.txt` plus transitive deps, `setuptools`, `wheel`. Repairs the env offline. |
 | `hand_landmarker.task` (7.8 MB) | `models/hand_landmarker.task` | MediaPipe hand landmark model, Phase 1 onward |
-| `gesture_recognizer.task` (8.4 MB) | `models/gesture_recognizer.task` | MediaPipe built-in gesture recognizer. Not used by the pipeline; available as an optional baseline in Phase 9 if wanted. |
-| MobileNetV2 ImageNet weights, no top | `~/.keras/models/mobilenet_v2_weights_tf_dim_ordering_tf_kernels_1.0_224_no_top.h5` | Phase 11 stretch |
-| GitHub issues #1 to #11 | github.com/kanadb004/personalized-gesture-vocab-builder/issues | One per phase, issue number = phase number + 1 |
+| `gesture_recognizer.task` (8.4 MB) | `models/gesture_recognizer.task` | MediaPipe built-in gesture recognizer. Not used by the pipeline; not needed by the 2 day plan. |
+| MobileNetV2 ImageNet weights, no top | `~/.keras/models/mobilenet_v2_weights_tf_dim_ordering_tf_kernels_1.0_224_no_top.h5` | Backlog only (MobileNetV2 stream is out of scope) |
+| GitHub issues #1 to #6 | github.com/kanadb004/personalized-gesture-vocab-builder/issues | One per phase, issue number = phase number + 1 (#7 to #11 closed, superseded by the 2 day plan) |
 | `phase` label | GitHub | Used by the issue workflow |
-| Kaggle ASL Alphabet (1.2 GB, 87,000 images, 29 classes, 200x200) | `data/raw/asl_alphabet/asl_alphabet_train/asl_alphabet_train/<class>/` (gitignored) | Phase 2, bulk of the backbone training data |
-| Kaggle ASL Alphabet Test (27 MB, 1,740 images, different signer) | `data/raw/asl_alphabet_test/<class>/` (gitignored) | Phase 2, cross-signer split |
+| Kaggle ASL Alphabet (1.2 GB, 87,000 images, 29 classes, 200x200) | `data/raw/asl_alphabet/asl_alphabet_train/asl_alphabet_train/<class>/` (gitignored) | Phase 2, backbone training data (signer A) |
+| Kaggle ASL Alphabet Test (27 MB, 1,740 images, different signer) | `data/raw/asl_alphabet_test/<class>/` (gitignored) | Phase 2, cross-signer split (signer B) |
 | Kaggle CLI 2.2.4 | `uv tool install kaggle`, token in `~/.kaggle/access_token` | Only needed if more datasets are wanted while online |
 
 The raw image folders are large and gitignored. If they are ever lost they can be re-fetched
@@ -54,7 +54,7 @@ existing model of the right size.
 
 Detect it with `git ls-remote --exit-code origin -h refs/heads/main` (times out or fails).
 The normal per-phase workflow in CLAUDE.md needs the network at three points: the issue
-(already done for Phases 0 to 10), the push, and the PR merge. Offline, do this instead:
+(already done for Phases 0 to 5), the push, and the PR merge. Offline, do this instead:
 
 1. Do not touch local `main`. Start the phase branch from the tip of the newest phase
    branch that has not been merged on GitHub (stacked), or from `main` if every earlier phase

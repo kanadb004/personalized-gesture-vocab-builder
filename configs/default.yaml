@@ -26,7 +26,7 @@ backbone:
   id: backbone_v1
 
 recognize:
-  max_distance: 0.15    # cosine distance accept threshold, calibrated in Phase 5
+  max_distance: 0.15    # cosine distance accept threshold, calibrated in Phase 3
   min_margin: 0.0        # optional d2 - d1 gap requirement, disabled by default
 
 enroll:
@@ -43,6 +43,7 @@ smoothing:
   cooldown_ms: 800          # minimum time between triggers of the same label
 
 output:
+  tts_backend: pyttsx3   # pyttsx3 or say (macOS command line fallback)
   tts_rate: 175
   tts_voice: default
   board_size: 5            # number of recent messages kept on the message board
