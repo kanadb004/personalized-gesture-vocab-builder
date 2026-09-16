@@ -1,0 +1,52 @@
+# Every tunable used anywhere in the pipeline lives here. Modules read values from the
+# loaded config object; no magic numbers in modules. See docs/PLAN.md Section 2 for the
+# rationale behind each default.
+
+camera:
+  index: 0            # cv2.VideoCapture device index
+  width: 1280
+  height: 720
+  mirror: true         # flip horizontally for a selfie-view display
+
+landmarks:
+  num_hands: 1
+  min_hand_score: 0.5  # HandLandmarker detections below this score are dropped
+  min_hand_detection_confidence: 0.5
+  min_tracking_confidence: 0.5
+
+features:
+  rotate: false         # rotation normalization about the wrist, default off
+  dim: 63               # 21 landmarks x (x, y, z)
+
+backbone:
+  input_dim: 63
+  embed_dim: 64
+  hidden_dims: [128, 128]
+  dropout: 0.2
+  id: backbone_v1
+
+recognize:
+  max_distance: 0.15    # cosine distance accept threshold, calibrated in Phase 5
+  min_margin: 0.0        # optional d2 - d1 gap requirement, disabled by default
+
+enroll:
+  min_samples: 5
+  max_samples: 10
+  stability_frames: 5
+  stability_max_motion: 0.02
+  collision_distance: 0.2
+
+smoothing:
+  window: 12             # sliding window of frames for majority vote
+  min_votes: 8            # votes required within the window to confirm a label
+  release_frames: 6        # frames a label must be absent before it can fire again
+  cooldown_ms: 800          # minimum time between triggers of the same label
+
+output:
+  tts_rate: 175
+  tts_voice: default
+  board_size: 5            # number of recent messages kept on the message board
+  muted: false
+
+profile:
+  schema_version: 1
