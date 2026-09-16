@@ -20,7 +20,7 @@ from pathlib import Path
 
 import cv2
 
-from pgvb.camera import Camera
+from pgvb.camera import Camera, FpsMeter
 from pgvb.config import load
 from pgvb.enroll import Enroller
 from pgvb.output import MessageBoard, Speaker
@@ -113,6 +113,7 @@ def _run_replay(args: argparse.Namespace, pipeline: Pipeline, speaker: Speaker |
 def _run_live(args: argparse.Namespace, cfg, pipeline: Pipeline, speaker: Speaker | None) -> None:
     board = MessageBoard(cfg.output.board_size)
     timings: dict[str, list[float]] = {}
+    fps_meter = FpsMeter()
     with Camera(
         index=cfg.camera.index, width=cfg.camera.width, height=cfg.camera.height, mirror=cfg.camera.mirror
     ) as cam:
@@ -125,6 +126,7 @@ def _run_live(args: argparse.Namespace, cfg, pipeline: Pipeline, speaker: Speake
             frame, ts_ms = result
             frame_result = pipeline.process(frame, ts_ms)
             _accumulate(timings, frame_result.timings_ms)
+            fps = fps_meter.tick()
 
             if frame_result.trigger is not None:
                 gesture = next(
@@ -138,9 +140,12 @@ def _run_live(args: argparse.Namespace, cfg, pipeline: Pipeline, speaker: Speake
 
             label = frame_result.confirmed_label or "no gesture"
             cv2.putText(frame, label, (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 0.8, (255, 255, 255), 2)
+            cv2.putText(
+                frame, f"fps: {fps:.1f}", (10, 60), cv2.FONT_HERSHEY_SIMPLEX, 0.8, (255, 255, 255), 2
+            )
             for i, message in enumerate(reversed(board.latest())):
                 cv2.putText(
-                    frame, message, (10, 60 + 25 * i), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 255, 0), 1
+                    frame, message, (10, 90 + 25 * i), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 255, 0), 1
                 )
             cv2.imshow("pgvb recognize", frame)
             if cv2.waitKey(1) & 0xFF == ord("q"):
