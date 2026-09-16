@@ -26,7 +26,8 @@ backbone:
   id: backbone_v1
 
 recognize:
-  max_distance: 0.15    # cosine distance accept threshold, calibrated in Phase 3
+  max_distance: 0.39    # cosine distance accept threshold, calibrated in Phase 3
+                        # (scripts/calibrate_threshold.py, reports/threshold_sweep.md)
   min_margin: 0.0        # optional d2 - d1 gap requirement, disabled by default
 
 enroll:

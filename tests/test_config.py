@@ -28,7 +28,7 @@ def test_every_section_present_with_default_values():
     assert cfg.backbone.dropout == 0.2
     assert cfg.backbone.id == "backbone_v1"
 
-    assert cfg.recognize.max_distance == 0.15
+    assert cfg.recognize.max_distance == 0.39
     assert cfg.recognize.min_margin == 0.0
 
     assert cfg.enroll.min_samples == 5
