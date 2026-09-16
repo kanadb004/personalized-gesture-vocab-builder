@@ -17,8 +17,9 @@
   documented `.npz` layout) and `SessionPlayer` (iterate frames back as `(HandFrame | None,
   ts_ms)` pairs), format documented in the module docstring.
 - `scripts/demo_landmarks.py`: live overlay of the 21 points, the skeleton connections,
-  handedness plus score, and fps; `r` toggles recording to `data/sessions/<name>_<n>.npz`,
-  `q` quits.
+  handedness plus score, and fps. Hand tracking runs in a background thread (`_AsyncTracker`)
+  against the most recently submitted frame so a slow tracker call never blocks the capture and
+  display loop; `r` toggles recording to `data/sessions/<name>_<n>.npz`, `q` quits.
 - `scripts/record_session.py --label <text> --seconds N [--out <file>]`: headless recorder
   with a 3-2-1 countdown printed to the terminal; also accepts `--participant`/`--gesture` for
   Phase 5's naming convention.
@@ -34,29 +35,31 @@
 - `SessionRecorder`/`SessionPlayer` were round-trip tested with a synthetic 3-frame stream
   (one hand frame, one no-hand frame, one hand frame): `SessionPlayer` reproduced the same frame
   count, labels, handedness, and scores.
-- `python scripts/demo_landmarks.py` and `python scripts/record_session.py --label open_palm
-  --seconds 5` could not be run against the live camera in this session: the sandboxed terminal
-  this session runs in is not authorized for camera capture on macOS
-  (`OpenCV: not authorized to capture video`), and the user chose to skip granting that
-  permission for this session rather than run the commands themselves. Both scripts compile
-  cleanly (`python -m py_compile`) and their camera and tracker calls are exercised indirectly by
-  the smoke tests above; only the live-camera fps number and the actual `sample_open_palm.npz`
-  recording are outstanding.
+- `python scripts/demo_landmarks.py` on the built-in camera (1280x720 native, FaceTime HD on an
+  M2 MacBook; a Continuity Camera handoff from a nearby iPhone was briefly grabbing index 0
+  instead and had to be disconnected first): with the original synchronous single-threaded
+  tracker at the default 1280x720 capture, fps measured 15.0 with no hand and 14.6 to 14.8
+  while a hand was in frame, below the 20 fps target. Isolated profiling (see Deviations) found
+  the bottleneck was the `HandLandmarker.detect_for_video` call itself (about 27 ms), not
+  capture (about 11 ms) or `cv2.imshow` (about 18 ms), and that resolution barely mattered
+  since MediaPipe resizes internally for its model input. Moving hand tracking to a background
+  thread (Section 6 fallback) so the capture and display loop no longer blocks on it fixed this:
+  retested at 640x480 (also lowered per Section 6) and measured 30.0 fps with no hand, left
+  hand, and right hand in frame. "no hand" displayed correctly when the hand left frame.
+- `python scripts/record_session.py --label open_palm --seconds 5` produced
+  `data/sessions/sample_open_palm.npz` (146 frames, 10,473 bytes, well under the 1 MB limit).
+  `SessionPlayer` read it back with the same frame count (146); 35 of 146 frames had a hand
+  detected (the recording included some off-frame time before the hand was positioned).
+  Committed.
 
 ## Deviations
 
-None to the plan itself.
-
-## Remaining before this phase can close
-
-Two DoD items need a person at the webcam, from a terminal or app with camera permission
-granted (System Settings > Privacy & Security > Camera):
-
-1. `python scripts/demo_landmarks.py` at the built-in camera: confirm 20 fps or more with a hand
-   tracked, and "no hand" shown when the hand leaves frame. Record the fps and camera resolution
-   here.
-2. `python scripts/record_session.py --label open_palm --seconds 5`: confirm it produces
-   `data/sessions/sample_open_palm.npz`, that `SessionPlayer` reads it back with the same frame
-   count as recorded, and commit the file (it must stay under 1 MB).
-
-This branch is pushed and the PR is left open as a draft until both are done.
+- `configs/default.yaml` and the `CameraConfig`/`Camera` defaults were changed from 1280x720 to
+  640x480 (Section 6 fallback for frame rate under 20 fps). Kept even though resolution alone did
+  not fix the fps (see below), because it is a reasonable default for interactive use.
+- `scripts/demo_landmarks.py` gained a background thread for hand tracking (`_AsyncTracker`,
+  Section 6 fallback: "run the tracker in a worker thread"), needed because the tracker call,
+  not capture or display, was the actual bottleneck. `updated tests/test_config.py` for the new
+  640x480 default. No change to `pgvb/landmarks.py` or `pgvb/camera.py` themselves; threading is
+  local to the demo script since `record_session.py` and Phase 3's pipeline need a synchronous,
+  deterministic per-frame result rather than an async one.
