@@ -47,10 +47,11 @@
   retested at 640x480 (also lowered per Section 6) and measured 30.0 fps with no hand, left
   hand, and right hand in frame. "no hand" displayed correctly when the hand left frame.
 - `python scripts/record_session.py --label open_palm --seconds 5` produced
-  `data/sessions/sample_open_palm.npz` (146 frames, 10,473 bytes, well under the 1 MB limit).
-  `SessionPlayer` read it back with the same frame count (146); 35 of 146 frames had a hand
-  detected (the recording included some off-frame time before the hand was positioned).
-  Committed.
+  `data/sessions/sample_open_palm.npz` (144 frames, 34,523 bytes, well under the 1 MB limit).
+  `SessionPlayer` read it back with the same frame count (144); 143 of 144 frames had a hand
+  detected. A first attempt only had the hand up for the first 1.2 seconds of the 5 (35 of 146
+  frames), caught by inspecting the recorded `has_hand` timeline rather than trusting the frame
+  count alone, and was redone.
 
 ## Deviations
 
