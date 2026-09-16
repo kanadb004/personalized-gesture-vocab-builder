@@ -101,7 +101,7 @@ Update this table in the PR that completes each phase. Status values: `Todo`, `I
 
 | Phase | Title | Milestone | Status | Notes |
 |---|---|---|---|---|
-| 0 | Project scaffold and environment | DA2 | Todo | |
+| 0 | Project scaffold and environment | DA2 | Done | [phase-0](phases/phase-0.md) |
 | 1 | Camera and landmark pipeline | DA2 | Todo | |
 | 2 | Pose dataset and collection tooling | DA2 | Todo | |
 | 3 | Embedding backbone: train, evaluate, freeze, export | DA2 | Todo | |
