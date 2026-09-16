@@ -7,7 +7,7 @@ fail() { echo "commit-msg: $1" >&2; exit 1; }
 # Strip comment lines before checking.
 body=$(grep -v '^#' "$msg_file")
 
-if LC_ALL=C grep -q -i -E 'co-authored-by|claude-session|generated with|claude\.ai|anthropic' <<< "$body"; then
+if LC_ALL=C grep -q -i -E 'co-authored-by|generated with|claude|anthropic' <<< "$body"; then
   fail "attribution trailers or Claude references are not allowed"
 fi
 

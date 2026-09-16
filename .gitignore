@@ -26,6 +26,6 @@ data/raw/
 profiles/*.json
 !profiles/example.json
 
-# Claude Code local state; settings.json is committed on purpose (disables attribution)
+# Local tool state; settings.json is committed on purpose (attribution off)
 .claude/*
 !.claude/settings.json
