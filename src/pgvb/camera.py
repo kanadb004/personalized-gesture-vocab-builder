@@ -15,8 +15,8 @@ class Camera:
     def __init__(
         self,
         index: int = 0,
-        width: int = 1280,
-        height: int = 720,
+        width: int = 640,
+        height: int = 480,
         mirror: bool = True,
     ) -> None:
         self.index = index

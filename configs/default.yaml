@@ -4,8 +4,8 @@
 
 camera:
   index: 0            # cv2.VideoCapture device index
-  width: 1280
-  height: 720
+  width: 640           # lowered from 1280x720, per Section 6 fallback: measured 15 fps at 720p
+  height: 480
   mirror: true         # flip horizontally for a selfie-view display
 
 landmarks:

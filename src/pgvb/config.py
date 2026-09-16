@@ -14,8 +14,8 @@ _DEFAULT_CONFIG_PATH = Path(__file__).resolve().parents[2] / "configs" / "defaul
 @dataclass
 class CameraConfig:
     index: int = 0
-    width: int = 1280
-    height: int = 720
+    width: int = 640
+    height: int = 480
     mirror: bool = True
 
 

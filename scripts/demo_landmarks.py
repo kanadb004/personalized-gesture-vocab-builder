@@ -1,6 +1,11 @@
 #!/usr/bin/env python
 """Live webcam demo: overlays the 21 hand landmarks and connections, handedness, and fps.
 
+Hand tracking runs in a worker thread (Section 6 fallback for frame rate under 20 fps: the
+HandLandmarker call itself takes about 25-30 ms, well under the camera's own rate, so the
+capture/display loop reads and draws every frame while the tracker keeps up as fast as it can
+on the most recent frame, instead of blocking the display loop on every call).
+
 Keys: r toggles recording to data/sessions/<name>.npz, q quits.
 """
 
@@ -8,12 +13,14 @@ from __future__ import annotations
 
 import argparse
 import sys
+import threading
+import time
 
 import cv2
 
 from pgvb.camera import Camera, FpsMeter
 from pgvb.config import load
-from pgvb.landmarks import HandTracker
+from pgvb.landmarks import HandFrame, HandTracker
 from pgvb.replay import SessionRecorder
 
 # MediaPipe's 21-landmark hand skeleton connections (index pairs).
@@ -25,6 +32,46 @@ _CONNECTIONS = [
     (13, 17), (17, 18), (18, 19), (19, 20),
     (0, 17),
 ]
+
+
+class _AsyncTracker:
+    """Runs HandTracker.track() on a background thread against the most recently submitted
+    frame, so a slow tracker call never blocks the capture/display loop."""
+
+    def __init__(self, tracker: HandTracker) -> None:
+        self._tracker = tracker
+        self._lock = threading.Lock()
+        self._pending: tuple[object, float] | None = None
+        self._latest: HandFrame | None = None
+        self._stop = False
+        self._thread = threading.Thread(target=self._run, daemon=True)
+        self._thread.start()
+
+    def submit(self, frame, ts_ms: float) -> None:
+        with self._lock:
+            self._pending = (frame.copy(), ts_ms)
+
+    def latest(self) -> HandFrame | None:
+        with self._lock:
+            return self._latest
+
+    def _run(self) -> None:
+        last_ts = None
+        while not self._stop:
+            with self._lock:
+                item = self._pending
+            if item is None or item[1] == last_ts:
+                time.sleep(0.001)
+                continue
+            frame, ts_ms = item
+            last_ts = ts_ms
+            result = self._tracker.track(frame, ts_ms)
+            with self._lock:
+                self._latest = result
+
+    def stop(self) -> None:
+        self._stop = True
+        self._thread.join(timeout=1.0)
 
 
 def _draw_overlay(frame, hand_frame, fps: float) -> None:
@@ -56,6 +103,7 @@ def main() -> int:
         min_hand_detection_confidence=cfg.landmarks.min_hand_detection_confidence,
         min_tracking_confidence=cfg.landmarks.min_tracking_confidence,
     )
+    async_tracker = _AsyncTracker(tracker)
     fps_meter = FpsMeter()
     recorder: SessionRecorder | None = None
     record_index = 0
@@ -67,40 +115,44 @@ def main() -> int:
         mirror=cfg.camera.mirror,
     ) as cam:
         print("press r to toggle recording, q to quit")
-        while True:
-            result = cam.read()
-            if result is None:
-                print("camera read failed", file=sys.stderr)
-                break
-            frame, ts_ms = result
+        try:
+            while True:
+                result = cam.read()
+                if result is None:
+                    print("camera read failed", file=sys.stderr)
+                    break
+                frame, ts_ms = result
 
-            hand_frame = tracker.track(frame, ts_ms)
-            fps = fps_meter.tick()
+                async_tracker.submit(frame, ts_ms)
+                hand_frame = async_tracker.latest()
+                fps = fps_meter.tick()
 
-            if recorder is not None:
-                recorder.append(hand_frame, ts_ms)
+                if recorder is not None:
+                    recorder.append(hand_frame, ts_ms)
 
-            _draw_overlay(frame, hand_frame, fps)
-            if recorder is not None:
-                cv2.putText(
-                    frame, f"REC ({len(recorder)})", (10, 90),
-                    cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0, 0, 255), 2,
-                )
-            cv2.imshow("pgvb landmarks", frame)
+                _draw_overlay(frame, hand_frame, fps)
+                if recorder is not None:
+                    cv2.putText(
+                        frame, f"REC ({len(recorder)})", (10, 90),
+                        cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0, 0, 255), 2,
+                    )
+                cv2.imshow("pgvb landmarks", frame)
 
-            key = cv2.waitKey(1) & 0xFF
-            if key == ord("q"):
-                break
-            if key == ord("r"):
-                if recorder is None:
-                    recorder = SessionRecorder(label=args.name)
-                    print("recording started")
-                else:
-                    out_path = f"data/sessions/{args.name}_{record_index}.npz"
-                    recorder.save(out_path)
-                    print(f"saved {out_path} ({len(recorder)} frames)")
-                    record_index += 1
-                    recorder = None
+                key = cv2.waitKey(1) & 0xFF
+                if key == ord("q"):
+                    break
+                if key == ord("r"):
+                    if recorder is None:
+                        recorder = SessionRecorder(label=args.name)
+                        print("recording started")
+                    else:
+                        out_path = f"data/sessions/{args.name}_{record_index}.npz"
+                        recorder.save(out_path)
+                        print(f"saved {out_path} ({len(recorder)} frames)")
+                        record_index += 1
+                        recorder = None
+        finally:
+            async_tracker.stop()
 
     cv2.destroyAllWindows()
     return 0
