@@ -1,0 +1,27 @@
+# Training config for backbone_v1 (Phase 2). See docs/PLAN.md Section 2 for the backbone
+# architecture (read from configs/default.yaml) and this section for the episodic setup.
+
+seed: 0
+
+data:
+  landmarks_path: data/landmarks/asl_v1.npz
+  # Five visually distinct, well-detected letters held out of training entirely; they are the
+  # never-seen poses for the few-shot eval in scripts/eval_backbone.py.
+  heldout: [B, C, L, V, Y]
+
+episode:
+  n_way: 5
+  k_shot: 5
+  n_query: 10
+  episodes_per_epoch: 200
+  max_epochs: 60
+  patience: 8          # early stopping on held-out episode accuracy, epochs without improvement
+
+augment:
+  rotation_deg: 15      # plus or minus, about the wrist
+  scale_min: 0.9
+  scale_max: 1.1
+  jitter_sigma: 0.01     # gaussian jitter added to each coordinate
+
+optimizer:
+  learning_rate: 0.001

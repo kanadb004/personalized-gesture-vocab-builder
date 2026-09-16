@@ -1,0 +1,15 @@
+{
+  "heldout_letters": [
+    "B",
+    "C",
+    "L",
+    "V",
+    "Y"
+  ],
+  "n_episodes": 500,
+  "five_shot_acc": 0.98768,
+  "one_shot_acc": 0.9566,
+  "intra_mean": 0.09595651179552078,
+  "intra_p95": 0.9570029139518732,
+  "inter_mean": 1.0405116081237793
+}

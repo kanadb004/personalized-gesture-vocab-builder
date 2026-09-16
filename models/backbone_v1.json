@@ -1,0 +1,21 @@
+{
+  "id": "backbone_v1",
+  "input_dim": 63,
+  "embed_dim": 64,
+  "hidden_dims": [
+    128,
+    128
+  ],
+  "train_date": "2026-09-17",
+  "git_commit": "a99e0c8",
+  "mean_embed_ms": 0.03261087500141002,
+  "heldout_five_shot_acc": 0.98768,
+  "heldout_one_shot_acc": 0.9566,
+  "heldout_letters": [
+    "B",
+    "C",
+    "L",
+    "V",
+    "Y"
+  ]
+}
