@@ -2,9 +2,10 @@
 """Command line driver for the recognition pipeline (O2, O3, O4, O5), with no GUI.
 
 Modes:
-  --enroll NAME --message TEXT --session FILE   enroll one gesture from a recorded session
-  --session FILE                                replay a session, print per-frame decisions
-  --session FILE --smooth                       replay a session, print triggers instead
+  --enroll NAME --message TEXT --session FILE [FILE ...]   enroll one gesture, pooling frames
+                                                            from one or more recorded sessions
+  --session FILE [FILE ...]                     replay sessions, print per-frame decisions
+  --session FILE [FILE ...] --smooth            replay sessions, print triggers instead
   --speak                                       speak triggers as they fire (any mode)
   (no --session)                                run live on the camera, with an overlay window
 
@@ -50,16 +51,21 @@ def _accumulate(totals: dict[str, list[float]], timings_ms: dict[str, float]) ->
 def _run_enroll(args: argparse.Namespace, profile: Profile, pipeline: Pipeline) -> None:
     enroller = Enroller(pipeline.backbone, profile, pipeline.cfg.enroll)
     enroller.start(args.enroll, args.message)
-    player = SessionPlayer(args.session)
-    for hand_frame, _ts_ms in player:
+    total_frames = 0
+    for session_path in args.session:
+        player = SessionPlayer(session_path)
+        total_frames += len(player)
+        for hand_frame, _ts_ms in player:
+            if enroller.progress[0] >= pipeline.cfg.enroll.max_samples:
+                break
+            status = enroller.add_frame(hand_frame)
+            if status.ready:
+                enroller.accept_sample()
         if enroller.progress[0] >= pipeline.cfg.enroll.max_samples:
             break
-        status = enroller.add_frame(hand_frame)
-        if status.ready:
-            enroller.accept_sample()
 
     collected, needed = enroller.progress
-    print(f"collected {collected} samples ({needed} max) from {len(player)} frames")
+    print(f"collected {collected} samples ({needed} max) from {total_frames} frames")
     if collected < pipeline.cfg.enroll.min_samples:
         print(
             f"not enough stable samples ({collected} < {pipeline.cfg.enroll.min_samples}); "
@@ -80,26 +86,27 @@ def _run_enroll(args: argparse.Namespace, profile: Profile, pipeline: Pipeline) 
 
 
 def _run_replay(args: argparse.Namespace, pipeline: Pipeline, speaker: Speaker | None) -> None:
-    player = SessionPlayer(args.session)
     timings: dict[str, list[float]] = {}
-    for hand_frame, ts_ms in player:
-        result = pipeline.process_hand_frame(hand_frame, ts_ms)
-        _accumulate(timings, result.timings_ms)
-        if args.smooth:
-            if result.trigger is not None:
-                print(f"{result.trigger.ts_ms:.0f} ms: trigger {result.trigger.label!r}")
-                if speaker is not None:
-                    gesture = next(
-                        (g for g in pipeline.profile.gestures if g.name == result.trigger.label),
-                        None,
-                    )
-                    if gesture is not None:
-                        speaker.say(gesture.message)
-        else:
-            label = result.decision.label
-            distance = result.decision.distance
-            distance_str = f"{distance:.4f}" if distance is not None else "None"
-            print(f"{ts_ms:.0f} ms: label={label} distance={distance_str}")
+    for session_path in args.session:
+        player = SessionPlayer(session_path)
+        for hand_frame, ts_ms in player:
+            result = pipeline.process_hand_frame(hand_frame, ts_ms)
+            _accumulate(timings, result.timings_ms)
+            if args.smooth:
+                if result.trigger is not None:
+                    print(f"{result.trigger.ts_ms:.0f} ms: trigger {result.trigger.label!r}")
+                    if speaker is not None:
+                        gesture = next(
+                            (g for g in pipeline.profile.gestures if g.name == result.trigger.label),
+                            None,
+                        )
+                        if gesture is not None:
+                            speaker.say(gesture.message)
+            else:
+                label = result.decision.label
+                distance = result.decision.distance
+                distance_str = f"{distance:.4f}" if distance is not None else "None"
+                print(f"{ts_ms:.0f} ms: label={label} distance={distance_str}")
     _print_timings(timings)
 
 
@@ -147,7 +154,13 @@ def main() -> int:
     parser.add_argument("--profile", required=True, type=Path)
     parser.add_argument("--enroll", default=None, help="gesture name to enroll")
     parser.add_argument("--message", default=None, help="message spoken for the enrolled gesture")
-    parser.add_argument("--session", default=None, help="replay this .npz instead of the camera")
+    parser.add_argument(
+        "--session",
+        default=None,
+        nargs="+",
+        help="replay these .npz files (in order) instead of the camera; with --enroll, their "
+        "frames are pooled into one gesture",
+    )
     parser.add_argument("--smooth", action="store_true", help="print triggers instead of per-frame decisions")
     parser.add_argument("--speak", action="store_true", help="speak triggers as they fire")
     args = parser.parse_args()
