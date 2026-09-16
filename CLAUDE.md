@@ -8,12 +8,17 @@ then speaks or displays a message when that gesture is recognized. Course projec
 The full build plan with per-phase definitions of done lives in `docs/PLAN.md`. Read it at the
 start of every session. The original project document is `docs/DA-1.pdf`.
 
-## Session protocol (one phase per session)
+## Session protocol (one phase at a time)
+
+The whole build is budgeted at 1.5 to 2 days (see the budget column in `docs/PLAN.md`). A
+session may chain several phases, but each phase is finished, verified, and merged before the
+next one starts. Stay inside each phase's time budget; the plan says what to skip if it runs
+over.
 
 1. `git checkout main && git pull --ff-only origin main` and confirm `git status` is clean.
-2. Open `docs/PLAN.md`, find the first phase whose status is not `Done`. That is the phase for
-   this session. Do not skip ahead and do not start a second phase in the same session.
-3. Find the phase's issue. Issues #1 to #11 already exist for Phases 0 to 10 (issue number =
+2. Open `docs/PLAN.md`, find the first phase whose status is not `Done`. That is the next
+   phase. Do not skip ahead.
+3. Find the phase's issue. Issues #1 to #6 exist for Phases 0 to 5 (issue number =
    phase number + 1); confirm with `gh issue list --label phase`. Only create one if it is
    missing: `gh issue create --title "Phase N: <title>" --label phase --body-file <tmpfile>`
    with the Goal plus the Definition of Done checklist copied from the plan.
@@ -93,7 +98,7 @@ resumes on that branch.
   gitignored). `mp.solutions.hands` exists in 0.10.14 but is deprecated; do not use it.
 - `import mediapipe` also imports tensorflow (optional dependency), so first import costs
   several seconds (20 s or more when the machine is loaded). Keep TensorFlow out of the
-  runtime path anyway: training uses Keras, inference uses exported numpy weights (Phase 3).
+  runtime path anyway: training uses Keras, inference uses exported numpy weights (Phase 2).
 
 ## Code conventions
 
@@ -101,12 +106,13 @@ resumes on that branch.
   tests in `tests/`, configs in `configs/`, models in `models/`, data in `data/`.
 - Python 3.11, type hints on public functions, docstrings only where the name is not enough.
 - Config lives in `configs/default.yaml` and is loaded once; no magic numbers in modules.
-- Unit tests must not need a camera, a display, a speaker, or TensorFlow. Camera and GUI
-  checks are manual and documented in the phase notes. Tests that need the real backbone
-  weights load `models/backbone_v1.npz`.
-- Run `pytest -q` before every commit that touches `src/` or `tests/`.
-- Keep the app runnable at all times: `python -m pgvb` must start after every merged phase
-  from Phase 7 onward.
+- This is a prototype, not production code. Unit tests exist only for the pure numpy math the
+  plan lists (features, prototypes, smoothing, embedding parity, stability); do not write tests
+  for GUI, scripts, I/O, or glue. Tests must not need a camera, a display, a speaker, or
+  TensorFlow (the embedding parity test skips without it). Everything else is verified by
+  running it, with the numbers written in the phase notes.
+- Run `pytest -q` before opening each PR.
+- Keep the app runnable: `pgvb app` must start after every merged phase from Phase 4 onward.
 - Match the existing style of the file you are editing. Do not reformat unrelated code.
 
 ## Do not

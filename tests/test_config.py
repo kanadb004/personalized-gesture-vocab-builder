@@ -42,6 +42,7 @@ def test_every_section_present_with_default_values():
     assert cfg.smoothing.release_frames == 6
     assert cfg.smoothing.cooldown_ms == 800
 
+    assert cfg.output.tts_backend == "pyttsx3"
     assert cfg.output.tts_rate == 175
     assert cfg.output.tts_voice == "default"
     assert cfg.output.board_size == 5
