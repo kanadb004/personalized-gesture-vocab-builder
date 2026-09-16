@@ -10,8 +10,8 @@ def test_every_section_present_with_default_values():
     cfg = config.load()
 
     assert cfg.camera.index == 0
-    assert cfg.camera.width == 1280
-    assert cfg.camera.height == 720
+    assert cfg.camera.width == 640
+    assert cfg.camera.height == 480
     assert cfg.camera.mirror is True
 
     assert cfg.landmarks.num_hands == 1

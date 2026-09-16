@@ -110,7 +110,7 @@ Update this table in the PR that completes each phase. Status values: `Todo`, `I
 | Phase | Title | Budget | Status | Notes |
 |---|---|---|---|---|
 | 0 | Project scaffold and environment | done | Done | [phase-0](phases/phase-0.md) |
-| 1 | Camera and landmark pipeline | 1.5 h | Todo | |
+| 1 | Camera and landmark pipeline | 1.5 h | Done | [phase-1](phases/phase-1.md) |
 | 2 | Backbone from ASL landmarks | 2.5 h | Todo | |
 | 3 | Recognition core, smoothing, and speech | 2.5 h | Todo | |
 | 4 | Desktop app: live view, enrollment, refinement | 3.5 h | Todo | |
