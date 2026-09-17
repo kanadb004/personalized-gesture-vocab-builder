@@ -119,7 +119,6 @@ Update this table in the PR that completes each phase. Status values: `Todo`, `I
 Suggested schedule: Day 1 is Phases 1 to 3 (about 6.5 h of building, the training run in Phase 2
 can overlap with starting Phase 3). Day 2 is Phase 4 in the morning, Phase 5 in the afternoon
 (recording clips takes about an hour of the team's time), then the video (1 to 2 h, by hand).
-Milestones from the document map as: DA2 = Phases 1 to 3, DA3 = Phase 4, Final = Phase 5.
 
 ## 5. Phases
 
@@ -278,7 +277,7 @@ Definition of Done:
 - [ ] `--speak` on the live camera produces audible speech and the fps during speech stays
       within 10 percent of silent fps (HUMAN, note the backend and voice).
 - [ ] Per-frame pipeline time (excluding capture) under 25 ms mean.
-- [ ] `docs/phases/phase-3.md` written; this closes milestone DA2.
+- [ ] `docs/phases/phase-3.md` written.
 
 If over budget: drop the `min_margin` rule and the `on_finished` callback; keep everything
 else.
@@ -316,7 +315,7 @@ Definition of Done:
       pose shows "no gesture".
 - [ ] Flag flow works live: a pose that was missed is recognized after one refinement (HUMAN).
 - [ ] Closing the window releases the camera and stops the TTS thread (process exits).
-- [ ] `docs/phases/phase-4.md` with the two screenshots; this closes milestone DA3.
+- [ ] `docs/phases/phase-4.md` with the two screenshots.
 
 If over budget: Manage dialog reduces to delete only; Settings dialog is dropped (profile and
 camera come from the command line).
