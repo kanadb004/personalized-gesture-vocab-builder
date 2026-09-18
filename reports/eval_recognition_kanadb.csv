@@ -1,0 +1,14 @@
+clip,expected,n_frames,n_triggers,first_trigger,correct,algorithmic_latency_ms
+open_palm_1.npz,open_palm,78,1,open_palm,True,755.0
+open_palm_2.npz,open_palm,81,1,open_palm,True,700.7
+open_palm_3.npz,open_palm,79,1,open_palm,True,729.6
+peace_sign_1.npz,peace_sign,79,1,peace_sign,True,896.8
+peace_sign_2.npz,peace_sign,77,1,peace_sign,True,622.5
+peace_sign_3.npz,peace_sign,82,1,peace_sign,True,812.7
+fist_1.npz,fist,73,1,fist,True,665.9
+fist_2.npz,fist,82,1,fist,True,566.9
+fist_3.npz,fist,71,1,fist,True,822.4
+thumbs_up_1.npz,thumbs_up,85,0,,False,
+thumbs_up_2.npz,thumbs_up,75,0,,False,
+thumbs_up_3.npz,thumbs_up,77,0,,False,
+nongesture.npz,,956,0,,True,

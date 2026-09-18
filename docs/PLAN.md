@@ -114,7 +114,7 @@ Update this table in the PR that completes each phase. Status values: `Todo`, `I
 | 2 | Backbone from ASL landmarks | 2.5 h | Done | [phase-2](phases/phase-2.md) |
 | 3 | Recognition core, smoothing, and speech | 2.5 h | Done | [phase-3](phases/phase-3.md) |
 | 4 | Desktop app: live view, enrollment, refinement | 3.5 h | Done | [phase-4](phases/phase-4.md) |
-| 5 | Evaluation, results, and demo material | 3 h + 1 h recording | Todo | |
+| 5 | Evaluation, results, and demo material | 3 h + 1 h recording | Done | [phase-5](phases/phase-5.md) |
 
 Suggested schedule: Day 1 is Phases 1 to 3 (about 6.5 h of building, the training run in Phase 2
 can overlap with starting Phase 3). Day 2 is Phase 4 in the morning, Phase 5 in the afternoon
@@ -328,8 +328,8 @@ Goal: document 5.6, reproduced by scripts from committed session files, written 
 Depends on: Phase 4.
 
 Deliverables:
-- `docs/evaluation/protocol.md`: the recording protocol. Per participant (the two team members,
-  plus any volunteer who is available): invent 3 to 5 personal gestures, enroll each with 8
+- `docs/evaluation/protocol.md`: the recording protocol. One participant (a team member):
+  invent 3 to 5 personal gestures, enroll each with 8
   samples through the app, then record for each gesture 3 clips of 5 seconds
   (`data/sessions/eval/<participant>/<gesture>_<k>.npz`) and one 60 second non-gesture clip
   (resting, typing, scratching head, drinking). Time each enrollment with a stopwatch and note
@@ -369,7 +369,7 @@ Definition of Done (code):
 - [ ] Every number in `reports/results.md` is produced by a script from committed files.
 
 Definition of Done (data, HUMAN, about 1 hour):
-- [ ] At least 2 participants, at least 3 gestures each, all clips and profiles committed.
+- [ ] At least 1 participant, at least 3 gestures, all clips and the profile committed.
 - [ ] `reports/results.md` complete with all six tables and the targets marked.
 - [ ] `docs/demo_script.md` written; fresh clone plus `pip install --no-build-isolation -e .`,
       `pytest -q`, and `pgvb app` succeed following only the README.
@@ -386,7 +386,7 @@ If over budget: drop `make_figures.py` (tables only), and the trigger-to-speech 
 | Frame rate under 20 fps | Lower capture resolution to 640x480; run the tracker in a worker thread; skip every second frame for embedding while still drawing every frame. |
 | pyttsx3 blocks or fails on macOS | `output.tts_backend: say` (subprocess), already planned as the fallback. |
 | Tkinter video is choppy | Downscale the preview to 640 wide; keep processing at capture resolution. |
-| Not enough participants | The two team members are the minimum; report with 2 and say so. |
+| Not enough participants | One team member is the minimum; report with 1 and say so. |
 
 ## 7. Backlog
 
@@ -397,6 +397,9 @@ Ideas that are out of scope. Add a line, do not build.
 - Self-recorded pose catalogue with two or more recorders for a cross-person train split.
 - Nielsen heuristic evaluation table and SUS questionnaire (document 5.6 item 2).
 - Per-gesture custom threshold.
+- Enrollment stability gate tuned for closed-hand poses: Phase 5 found `fist` and `thumbs_up`
+  took 10 to 20 times longer to enroll than open-hand poses, and the resulting less-consistent
+  `thumbs_up` prototype then false-rejected on later recordings (`reports/results.md` table 4).
 - Two-handed gestures (`num_hands=2`, concatenated features).
 - Symbol images shown on the board next to the message.
 - Export profile as a printable gesture card for caregivers.
