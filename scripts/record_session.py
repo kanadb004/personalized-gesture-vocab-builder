@@ -21,6 +21,9 @@ def main() -> int:
     parser.add_argument("--out", default=None, help="output .npz path")
     parser.add_argument("--participant", default=None, help="participant name, for Phase 5")
     parser.add_argument("--gesture", default=None, help="gesture name, for Phase 5")
+    parser.add_argument(
+        "--clip", type=int, default=None, help="clip index, appended as _<clip>, for Phase 5 (e.g. 1, 2, 3)"
+    )
     args = parser.parse_args()
 
     cfg = load()
@@ -34,7 +37,8 @@ def main() -> int:
     if args.out:
         out_path = args.out
     elif args.participant and args.gesture:
-        out_path = f"data/sessions/eval/{args.participant}/{args.gesture}.npz"
+        suffix = f"_{args.clip}" if args.clip is not None else ""
+        out_path = f"data/sessions/eval/{args.participant}/{args.gesture}{suffix}.npz"
     else:
         out_path = f"data/sessions/sample_{args.label}.npz"
 
