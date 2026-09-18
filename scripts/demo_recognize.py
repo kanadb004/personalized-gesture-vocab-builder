@@ -15,7 +15,10 @@ Prints mean per-pipeline-stage timing at exit.
 from __future__ import annotations
 
 import argparse
+import statistics
 import sys
+import time
+from collections import deque
 from pathlib import Path
 
 import cv2
@@ -110,7 +113,13 @@ def _run_replay(args: argparse.Namespace, pipeline: Pipeline, speaker: Speaker |
     _print_timings(timings)
 
 
-def _run_live(args: argparse.Namespace, cfg, pipeline: Pipeline, speaker: Speaker | None) -> None:
+def _run_live(
+    args: argparse.Namespace,
+    cfg,
+    pipeline: Pipeline,
+    speaker: Speaker | None,
+    pending_trigger_ts: deque[float] | None = None,
+) -> None:
     board = MessageBoard(cfg.output.board_size)
     timings: dict[str, list[float]] = {}
     fps_meter = FpsMeter()
@@ -136,6 +145,8 @@ def _run_live(args: argparse.Namespace, cfg, pipeline: Pipeline, speaker: Speake
                 message = gesture.message if gesture is not None else frame_result.trigger.label
                 board.add(message)
                 if speaker is not None:
+                    if pending_trigger_ts is not None:
+                        pending_trigger_ts.append(time.time() * 1000.0)
                     speaker.say(message)
 
             label = frame_result.confirmed_label or "no gesture"
@@ -175,8 +186,17 @@ def main() -> int:
     pipeline = Pipeline(cfg, profile)
 
     speaker = None
+    pending_trigger_ts: deque[float] = deque()
+    latencies_ms: list[float] = []
     if args.speak:
-        speaker = Speaker(backend=cfg.output.tts_backend, rate=cfg.output.tts_rate, voice=cfg.output.tts_voice)
+        speaker = Speaker(
+            backend=cfg.output.tts_backend,
+            rate=cfg.output.tts_rate,
+            voice=cfg.output.tts_voice,
+            on_started=lambda event: latencies_ms.append(event.ts_ms - pending_trigger_ts.popleft())
+            if pending_trigger_ts
+            else None,
+        )
 
     try:
         if args.enroll is not None:
@@ -187,10 +207,15 @@ def main() -> int:
         elif args.session is not None:
             _run_replay(args, pipeline, speaker)
         else:
-            _run_live(args, cfg, pipeline, speaker)
+            _run_live(args, cfg, pipeline, speaker, pending_trigger_ts)
     finally:
         if speaker is not None:
             speaker.stop()
+    if latencies_ms:
+        print(
+            f"trigger to speech start: median {statistics.median(latencies_ms):.1f} ms "
+            f"over {len(latencies_ms)} triggers"
+        )
     return 0
 
 
