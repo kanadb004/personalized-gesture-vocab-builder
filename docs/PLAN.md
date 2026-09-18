@@ -113,7 +113,7 @@ Update this table in the PR that completes each phase. Status values: `Todo`, `I
 | 1 | Camera and landmark pipeline | 1.5 h | Done | [phase-1](phases/phase-1.md) |
 | 2 | Backbone from ASL landmarks | 2.5 h | Done | [phase-2](phases/phase-2.md) |
 | 3 | Recognition core, smoothing, and speech | 2.5 h | Done | [phase-3](phases/phase-3.md) |
-| 4 | Desktop app: live view, enrollment, refinement | 3.5 h | Todo | |
+| 4 | Desktop app: live view, enrollment, refinement | 3.5 h | Done | [phase-4](phases/phase-4.md) |
 | 5 | Evaluation, results, and demo material | 3 h + 1 h recording | Todo | |
 
 Suggested schedule: Day 1 is Phases 1 to 3 (about 6.5 h of building, the training run in Phase 2
