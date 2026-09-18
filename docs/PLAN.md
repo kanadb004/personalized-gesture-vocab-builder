@@ -114,7 +114,7 @@ Update this table in the PR that completes each phase. Status values: `Todo`, `I
 | 2 | Backbone from ASL landmarks | 2.5 h | Done | [phase-2](phases/phase-2.md) |
 | 3 | Recognition core, smoothing, and speech | 2.5 h | Done | [phase-3](phases/phase-3.md) |
 | 4 | Desktop app: live view, enrollment, refinement | 3.5 h | Done | [phase-4](phases/phase-4.md) |
-| 5 | Evaluation, results, and demo material | 3 h + 1 h recording | Todo | |
+| 5 | Evaluation, results, and demo material | 3 h + 1 h recording | In progress | [phase-5](phases/phase-5.md) |
 
 Suggested schedule: Day 1 is Phases 1 to 3 (about 6.5 h of building, the training run in Phase 2
 can overlap with starting Phase 3). Day 2 is Phase 4 in the morning, Phase 5 in the afternoon
