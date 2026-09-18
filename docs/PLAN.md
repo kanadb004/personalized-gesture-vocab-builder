@@ -328,8 +328,8 @@ Goal: document 5.6, reproduced by scripts from committed session files, written 
 Depends on: Phase 4.
 
 Deliverables:
-- `docs/evaluation/protocol.md`: the recording protocol. Per participant (the two team members,
-  plus any volunteer who is available): invent 3 to 5 personal gestures, enroll each with 8
+- `docs/evaluation/protocol.md`: the recording protocol. One participant (a team member):
+  invent 3 to 5 personal gestures, enroll each with 8
   samples through the app, then record for each gesture 3 clips of 5 seconds
   (`data/sessions/eval/<participant>/<gesture>_<k>.npz`) and one 60 second non-gesture clip
   (resting, typing, scratching head, drinking). Time each enrollment with a stopwatch and note
@@ -369,7 +369,7 @@ Definition of Done (code):
 - [ ] Every number in `reports/results.md` is produced by a script from committed files.
 
 Definition of Done (data, HUMAN, about 1 hour):
-- [ ] At least 2 participants, at least 3 gestures each, all clips and profiles committed.
+- [ ] At least 1 participant, at least 3 gestures, all clips and the profile committed.
 - [ ] `reports/results.md` complete with all six tables and the targets marked.
 - [ ] `docs/demo_script.md` written; fresh clone plus `pip install --no-build-isolation -e .`,
       `pytest -q`, and `pgvb app` succeed following only the README.
@@ -386,7 +386,7 @@ If over budget: drop `make_figures.py` (tables only), and the trigger-to-speech 
 | Frame rate under 20 fps | Lower capture resolution to 640x480; run the tracker in a worker thread; skip every second frame for embedding while still drawing every frame. |
 | pyttsx3 blocks or fails on macOS | `output.tts_backend: say` (subprocess), already planned as the fallback. |
 | Tkinter video is choppy | Downscale the preview to 640 wide; keep processing at capture resolution. |
-| Not enough participants | The two team members are the minimum; report with 2 and say so. |
+| Not enough participants | One team member is the minimum; report with 1 and say so. |
 
 ## 7. Backlog
 

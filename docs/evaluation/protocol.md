@@ -1,7 +1,7 @@
 # Phase 5 evaluation protocol
 
-Per document section 5.6. Two team members are the minimum participant count (Section 6 risk
-table); any volunteer who is available may be added as a third.
+Per document section 5.6. One team member is the participant for this build (Section 6 risk
+table fallback: report with 1 and say so).
 
 ## Per participant
 

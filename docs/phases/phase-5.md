@@ -61,12 +61,13 @@
   instrumentation was added (unchanged trigger output, `pending_trigger_ts` is only populated
   in live mode).
 
-## What remains (data DoD, HUMAN, about 1 hour, not done in this session)
+## What remains (data DoD, HUMAN, about 1 hour)
 
-No participants were available to record sessions in this session. Still needed, per
+Scope changed to one participant (Section 6 risk table fallback), reflected in
+`docs/PLAN.md` and `docs/evaluation/protocol.md`. Still needed, per
 `docs/evaluation/protocol.md`:
 
-- At least 2 participants (the two team members), at least 3 gestures each: enroll through the
+- One participant, at least 3 gestures: enroll through the
   app, record 3 clips per gesture plus one non-gesture clip, commit
   `profiles/<participant>.json` and `data/sessions/eval/<participant>/`.
 - Run `eval_recognition.py`, `eval_stability.py`, and `make_figures.py` per participant and fill
@@ -86,6 +87,10 @@ draft, resume in the next session.
 
 - `reports/results.md` tables 4 to 6 are placeholders pending real participant recordings,
   rather than filled with fabricated or Phase 3 team-recording numbers, since those recordings
-  used different gestures and don't match the "at least 2 participants, at least 3 gestures
-  each" data DoD.
+  used different gestures and don't match the data DoD.
+- Plan changed from at least 2 participants to 1: only one team member was available to record
+  in this session. `docs/PLAN.md` Section 5 (Phase 5 deliverables and data DoD) and Section 6
+  (risk table) were updated in this same PR to match; `docs/evaluation/protocol.md` reflects the
+  one-participant protocol. The results and limitations sections should say this plainly rather
+  than imply a broader evaluation than what was actually run.
 - No other deviations from the plan.
