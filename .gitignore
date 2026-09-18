@@ -22,9 +22,10 @@ models/*.task
 # Data that is never committed
 data/raw/
 
-# User profiles, except the example
+# User profiles, except the example and Phase 5 eval participants
 profiles/*.json
 !profiles/example.json
+!profiles/kanadb.json
 
 # Local tool state; settings.json is committed on purpose (attribution off)
 .claude/*
