@@ -95,17 +95,50 @@
   and added to the Backlog: the enrollment stability gate is not well tuned for closed-hand
   poses.
 
-## What remains
+## Demo video and DA-2 document
 
-- Record and edit the demo video per `docs/demo_script.md` (not done in this session: needs a
-  dedicated recording pass with screen capture and narration).
-- Fresh-clone check: clone the repo elsewhere, `pip install --no-build-isolation -e .`,
-  `pytest -q`, `pgvb app`, following only the README.
-- Tag `v1.0.0` on `main` once the above is merged.
+- The demo video was recorded by kanadb, by hand, following `docs/demo_script.md` (updated in
+  this session to walk through the real `kanadb` profile: enroll a new gesture live, recognize
+  `open_palm` and `fist`, reject an unrelated pose, flag and refine a miss, a stability check,
+  and the results tables). During recording, a new gesture (`rock_on` -> "Rock On") was enrolled
+  live and `open_palm` was refined once (the flag-and-refine step used `open_palm`, not
+  `thumbs_up`, a judgment call made during filming); `profiles/kanadb.json` was committed in
+  this post-video state at the user's request.
+- **Deviation, by explicit user instruction:** `reports/results.md` and the eval reports
+  (`reports/eval_recognition_kanadb.*`, `reports/eval_stability_kanadb.md`,
+  `reports/img/kanadb_*.png`) were computed from the profile *before* the video's live changes,
+  and were not re-run against the post-video profile. The committed `profiles/kanadb.json` is
+  therefore one snapshot ahead of the numbers cited in `reports/results.md`; the eval clips
+  under `data/sessions/eval/kanadb/` still exactly reproduce those numbers if replayed against
+  the profile version at the commit tagged for this phase's data collection (before "Add
+  finalized DA-2 document and post-demo profile state"). This is a deliberate exception to the
+  general "every number in results.md is produced by a script from committed files" DoD wording,
+  made because the video was the priority once the numbers were already measured and written up.
+- `docs/DA-2_results-tabulation-&-workind-demo-video_23BCE1265.pdf`: the course-submission
+  document, drafted with a matching VIT front page to `docs/DA-1.pdf` (title changed to
+  "DIGITAL ASSIGNMENT-2") and a full results write-up sourced from `reports/results.md`, then
+  manually reviewed, edited, and finalized by the team before committing.
 
-This phase's branch stays open (not squash-merged) until the remaining items above are done, per
-`CLAUDE.md`'s "phase cannot be completed in one session" fallback: push the branch, PR as a
-draft, resume in the next session.
+## Fresh-clone check
+
+Cloned the `phase-5-evaluation-results` branch to a scratch directory, copied
+`models/hand_landmarker.task` in as a machine-local asset (gitignored, not part of the clone,
+per `docs/OFFLINE.md`), and confirmed:
+- `pip install --no-build-isolation -e .` succeeds.
+- `pytest -q`: 25 passed.
+- `pgvb app --profile freshclone_check` starts and stays running (verified over 8 s) with no
+  errors, following only the README's Setup/Install/Download models/Quick start steps.
+
+The scratch clone and its throwaway profile were deleted afterward; the real repo's editable
+install was reinstalled pointing back at this working copy.
+
+## Remaining before merge
+
+- Tag `v1.0.0` on `main` once this PR is merged.
+
+This phase's branch stays open as a draft PR until that tag is created, per `CLAUDE.md`'s
+"phase cannot be completed in one session" fallback, though everything else in the data and
+code DoD is now done.
 
 ## Results against O1 to O6
 
