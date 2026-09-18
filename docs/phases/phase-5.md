@@ -35,11 +35,18 @@
   tool, camera framing, audio).
 - `README.md` completed: architecture pointer, quick start, how to enroll, how to evaluate,
   results pointer, limitations, team.
-- `reports/results.md`: tables 1 to 3 (backbone accuracy, threshold sweep, runtime) filled from
-  the numbers already in `reports/backbone_v1_eval.md`, `reports/threshold_sweep.md`, and
-  `docs/phases/phase-1.md`/`phase-2.md`/`phase-3.md`. Tables 4 to 6 (per-participant recognition
-  accuracy, stability, enrollment usability) are marked pending, see below.
+- `reports/results.md`: all six tables filled. Tables 1 to 3 from the numbers already in
+  `reports/backbone_v1_eval.md`, `reports/threshold_sweep.md`, and
+  `docs/phases/phase-1.md`/`phase-2.md`/`phase-3.md`. Tables 4 to 6 from the one-participant data
+  collection below.
 - Version bumped to `1.0.0` in `pyproject.toml` and `src/pgvb/__init__.py`.
+- One participant (`kanadb`), 4 gestures enrolled through the app (`open_palm` = "Hello",
+  `peace_sign` = "Thank you", `fist` = "I need help", `thumbs_up` = "Okay"), `profiles/kanadb.json`
+  and `data/sessions/eval/kanadb/` (3 clips per gesture, one 60 s non-gesture clip,
+  `enrollment_times.csv`) committed.
+- `reports/eval_recognition_kanadb.md/.csv`, `reports/eval_stability_kanadb.md`,
+  `reports/img/kanadb_confusion.png`, `reports/img/kanadb_latency.png`,
+  `reports/img/kanadb_stability.png`.
 
 ## Verification (code DoD)
 
@@ -61,27 +68,64 @@
   instrumentation was added (unchanged trigger output, `pending_trigger_ts` is only populated
   in live mode).
 
-## What remains (data DoD, HUMAN, about 1 hour)
+## Verification (data DoD, HUMAN, kanadb at the webcam)
 
-Scope changed to one participant (Section 6 risk table fallback), reflected in
-`docs/PLAN.md` and `docs/evaluation/protocol.md`. Still needed, per
-`docs/evaluation/protocol.md`:
+- Enrolled all 4 gestures through `pgvb app --profile kanadb` with the mouse; enrollment times
+  in `data/sessions/eval/kanadb/enrollment_times.csv` and discussed in `reports/results.md`
+  table 6 (open-hand poses 5 to 10 s, closed-hand poses 90 to 120 s).
+- Recorded 3 five-second clips per gesture plus one 60 second non-gesture clip with
+  `scripts/record_session.py --participant kanadb --gesture <g> --clip <k>`. Several clips had
+  to be re-recorded because the pose was not actually held during the take (caught by asking
+  after each command whether the pose was held, not by the script, which cannot tell); the final
+  committed set was individually confirmed.
+- `scripts/eval_recognition.py --profile profiles/kanadb.json --dir data/sessions/eval/kanadb
+  --nongesture "nongesture*.npz"`: overall clip accuracy 0.750 (9/12); `open_palm`, `peace_sign`,
+  `fist` all 1.000, `thumbs_up` 0.000 (false-rejected, not misclassified, see table 4); 0 false
+  triggers over the 60 s non-gesture clip; median algorithmic latency 729.6 ms.
+- `scripts/eval_stability.py --profile profiles/kanadb.json --dir data/sessions/eval/kanadb`:
+  accuracy matrix and prototype-stability assertion both passed (O4); `thumbs_up`'s 0.000 entry
+  reflects the same threshold issue, not a stability regression.
+- `scripts/make_figures.py`: wrote the three PNGs under `reports/img/kanadb_*.png`.
+- `demo_recognize.py --profile profiles/kanadb.json --speak`, live: median trigger-to-speech
+  (queue dequeue) latency 0.1 ms over 50 triggers; see the caveat about what this callback
+  actually measures in `reports/results.md` table 4.
+- Two DoD targets were not met with this profile: overall clip accuracy (0.750 < 0.85, entirely
+  `thumbs_up`) and algorithmic latency (729.6 ms > 600 ms). Both are explained, not silently
+  missed, in `reports/results.md` table 4, and both point to the same root cause noted in table 6
+  and added to the Backlog: the enrollment stability gate is not well tuned for closed-hand
+  poses.
 
-- One participant, at least 3 gestures: enroll through the
-  app, record 3 clips per gesture plus one non-gesture clip, commit
-  `profiles/<participant>.json` and `data/sessions/eval/<participant>/`.
-- Run `eval_recognition.py`, `eval_stability.py`, and `make_figures.py` per participant and fill
-  `reports/results.md` tables 4, 5, and 6 (currently marked pending) with the real numbers,
-  including the targets-met column.
-- Record the trigger-to-speech latency over 10 live triggers (`demo_recognize.py --speak`).
-- Record and edit the demo video per `docs/demo_script.md`.
+## What remains
+
+- Record and edit the demo video per `docs/demo_script.md` (not done in this session: needs a
+  dedicated recording pass with screen capture and narration).
 - Fresh-clone check: clone the repo elsewhere, `pip install --no-build-isolation -e .`,
   `pytest -q`, `pgvb app`, following only the README.
 - Tag `v1.0.0` on `main` once the above is merged.
 
-This phase's branch stays open (not squash-merged) until the data DoD above is complete, per
+This phase's branch stays open (not squash-merged) until the remaining items above are done, per
 `CLAUDE.md`'s "phase cannot be completed in one session" fallback: push the branch, PR as a
 draft, resume in the next session.
+
+## Results against O1 to O6
+
+- **O1 (real-time landmark extraction):** met since Phase 1; runtime table (results.md table 3)
+  restates the measured fps and per-stage timing.
+- **O2 (few-shot enrollment, no retraining):** met. All 4 gestures enrolled from 8 examples each
+  through the app with no weight update; `thumbs_up`'s recognition problem is a threshold/
+  enrollment-consistency issue, not a retraining or few-shot-capacity issue.
+- **O3 (open-set rejection):** met. 0 false triggers over the 60 s non-gesture clip.
+- **O4 (stability, enrolling N never disturbs 1..N-1):** met, both at the unit-test level
+  (`tests/test_stability.py`) and now at the participant level (`eval_stability.py`'s explicit
+  bit-identical-prototype assertion passed for all 4 gestures at every enrollment step).
+- **O5 (spoken + on-screen output):** met; Phase 3 and 4 verified audible speech and the message
+  board, unchanged here.
+- **O6 (real-time responsiveness and enrollment usability):** partially met. Responsiveness:
+  algorithmic latency (729.6 ms) missed the 600 ms target at this webcam's tracker-bound frame
+  rate, explained in results.md table 4. Usability: enrollment for open-hand gestures was fast
+  and easy (5 to 10 s), but closed-hand gestures were slow and inconsistent to enroll (90 to
+  120 s), which is exactly the kind of caregiver-usability problem O6 is meant to catch; it is
+  recorded honestly rather than hidden, with a Backlog line for the fix.
 
 ## Deviations
 

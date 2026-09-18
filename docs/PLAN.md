@@ -397,6 +397,9 @@ Ideas that are out of scope. Add a line, do not build.
 - Self-recorded pose catalogue with two or more recorders for a cross-person train split.
 - Nielsen heuristic evaluation table and SUS questionnaire (document 5.6 item 2).
 - Per-gesture custom threshold.
+- Enrollment stability gate tuned for closed-hand poses: Phase 5 found `fist` and `thumbs_up`
+  took 10 to 20 times longer to enroll than open-hand poses, and the resulting less-consistent
+  `thumbs_up` prototype then false-rejected on later recordings (`reports/results.md` table 4).
 - Two-handed gestures (`num_hands=2`, concatenated features).
 - Symbol images shown on the board next to the message.
 - Export profile as a printable gesture card for caregivers.
